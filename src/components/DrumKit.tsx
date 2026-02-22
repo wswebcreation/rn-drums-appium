@@ -20,7 +20,7 @@ const LAYOUT = {
   crash_right: { size: 0.185,  aspect: 1.3, cx: 0.89,  cy: 0.26  },
   tom_high:    { size: 0.095, aspect: 1.3, cx: 0.26,  cy: 0.34  },
   tom_mid:     { size: 0.095, aspect: 1.3, cx: 0.4,   cy: 0.275 },
-  tom_low:     { size: 0.095, aspect: 1.3, cx: 0.56,  cy: 0.29  },
+  tom_low:     { size: 0.095, aspect: 1.5, cx: 0.56,  cy: 0.29  },
   snare:       { size: 0.10,  aspect: 1.7, cx: 0.42,  cy: 0.50  },
   tom_floor:   { size: 0.135,  aspect: 1.5, cx: 0.74,  cy: 0.48  },
   kick:        { size: 0.17,  aspect: 1,   cx: 0.30,  cy: 0.65  },

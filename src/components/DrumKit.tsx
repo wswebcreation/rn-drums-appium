@@ -9,6 +9,25 @@ import { KickPedal } from './KickPedal';
 const BG_IMAGE = require('../../assets/drumkit-bg.png');
 const IMAGE_ASPECT = 1024 / 682;
 
+// ── Per-piece layout config (single source of truth) ────────────────
+// size   = base size as fraction of imgW (controls height)
+// aspect = width / height (1 = circle, >1 = wider)
+// cx, cy = centre position as fractions of the displayed image
+const LAYOUT = {
+  crash_left:  { size: 0.16,  aspect: 1.65, cx: 0.145,  cy: 0.16  },
+  hihat:       { size: 0.11,  aspect: 1.5, cx: 0.08, cy: 0.37  },
+  ride:        { size: 0.175,  aspect: 1.5, cx: 0.67,  cy: 0.16  },
+  crash_right: { size: 0.185,  aspect: 1.3, cx: 0.89,  cy: 0.26  },
+  tom_high:    { size: 0.095, aspect: 1.3, cx: 0.26,  cy: 0.34  },
+  tom_mid:     { size: 0.095, aspect: 1.3, cx: 0.4,   cy: 0.275 },
+  tom_low:     { size: 0.095, aspect: 1.3, cx: 0.56,  cy: 0.29  },
+  snare:       { size: 0.10,  aspect: 1.7, cx: 0.42,  cy: 0.50  },
+  tom_floor:   { size: 0.135,  aspect: 1.5, cx: 0.74,  cy: 0.48  },
+  kick:        { size: 0.17,  aspect: 1,   cx: 0.30,  cy: 0.65  },
+  kick2:       { size: 0.17,  aspect: 1,   cx: 0.56,  cy: 0.65  },
+  hihat_pedal: { size: 0.085,   aspect: 1.5, cx: 0.345,  cy: 0.145  },
+} as const;
+
 interface DrumKitProps {
   onHit: (id: DrumPieceId) => void;
 }
@@ -35,39 +54,37 @@ export function DrumKit({ onHit }: DrumKitProps) {
     imgY = (CH - imgH) / 2;
   }
 
-  // ── Size helpers — all relative to image width ──────────────────
-  const cym = (frac: number) => {
-    const size = imgW * frac;
-    return { w: size, h: size };
-  };
-  const pad = (frac: number) => ({ w: imgW * frac, h: imgW * frac });
-  const kickSz = (frac: number) => ({ w: imgW * frac, h: imgW * frac });
-  const crashL  = cym(0.17);
-  const crashR  = cym(0.19);
-  const hihat   = cym(0.12);
-  const hhPedal = cym(0.1);
-  const ride    = cym(0.18);
-  const snare   = pad(0.10);
-  const tomHi   = pad(0.095);
-  const tomMid  = pad(0.095);
-  const tomLow  = pad(0.095);
-  const tomFlr  = pad(0.14);
-  const kick1   = kickSz(0.17);
-  const kick2   = kickSz(0.17);
-
-  /**
-   * Centre a piece at (cx, cy) — fractions of the displayed image —
-   * and convert to absolute positioning within the full screen canvas.
-   */
-  function pos(cx: number, cy: number, w: number, h: number) {
+  // Resolve a layout config entry into pixel values + absolute style
+  function resolve(key: keyof typeof LAYOUT) {
+    const { size, aspect, cx, cy } = LAYOUT[key];
+    const h = imgW * size;
+    const w = h * aspect;
     return {
-      position: 'absolute' as const,
-      left: imgX + imgW * cx - w / 2,
-      top: imgY + imgH * cy - h / 2,
+      w,
+      h,
+      borderRadius: w / 2,
+      style: {
+        position: 'absolute' as const,
+        left: imgX + imgW * cx - w / 2,
+        top: imgY + imgH * cy - h / 2,
+      },
     };
   }
 
   const p = DRUM_PIECE_MAP;
+
+  const crashL  = resolve('crash_left');
+  const hihat   = resolve('hihat');
+  const ride    = resolve('ride');
+  const crashR  = resolve('crash_right');
+  const tomHi   = resolve('tom_high');
+  const tomMid  = resolve('tom_mid');
+  const tomLow  = resolve('tom_low');
+  const snare   = resolve('snare');
+  const tomFlr  = resolve('tom_floor');
+  const kick1   = resolve('kick');
+  const kick2   = resolve('kick2');
+  const hhPedal = resolve('hihat_pedal');
 
   return (
     <View
@@ -82,28 +99,28 @@ export function DrumKit({ onHit }: DrumKitProps) {
       />
 
       {/* ── Cymbals ─────────────────────────────────────────────── */}
-      <Cymbal piece={p['crash_left']}  onHit={onHit} width={crashL.w}  height={crashL.h}  style={pos(0.15,  0.15, crashL.w,  crashL.h)} />
-      <Cymbal piece={p['hihat']}       onHit={onHit} width={hihat.w}   height={hihat.h}   style={pos(0.075, 0.35,  hihat.w,   hihat.h)} />
-      <Cymbal piece={p['ride']}        onHit={onHit} width={ride.w}    height={ride.h}    style={pos(0.67, 0.15, ride.w,    ride.h)} />
-      <Cymbal piece={p['crash_right']} onHit={onHit} width={crashR.w}  height={crashR.h}  style={pos(0.89,  0.25,  crashR.w,  crashR.h)} />
+      <Cymbal piece={p['crash_left']}  onHit={onHit} width={crashL.w}  height={crashL.h}  style={crashL.style} />
+      <Cymbal piece={p['hihat']}       onHit={onHit} width={hihat.w}   height={hihat.h}   style={hihat.style} />
+      <Cymbal piece={p['ride']}        onHit={onHit} width={ride.w}    height={ride.h}    style={ride.style} />
+      <Cymbal piece={p['crash_right']} onHit={onHit} width={crashR.w}  height={crashR.h}  style={crashR.style} />
 
       {/* ── Toms ────────────────────────────────────────────────── */}
-      <DrumPad piece={p['tom_high']}  onHit={onHit} width={tomHi.w}  height={tomHi.h}  borderRadius={tomHi.w / 2}  style={pos(0.26,  0.34,  tomHi.w,  tomHi.h)} />
-      <DrumPad piece={p['tom_mid']}   onHit={onHit} width={tomMid.w} height={tomMid.h} borderRadius={tomMid.w / 2} style={pos(0.4, 0.275, tomMid.w, tomMid.h)} />
-      <DrumPad piece={p['tom_low']}   onHit={onHit} width={tomLow.w} height={tomLow.h} borderRadius={tomLow.w / 2} style={pos(0.56, 0.29, tomLow.w, tomLow.h)} />
+      <DrumPad piece={p['tom_high']}  onHit={onHit} width={tomHi.w}  height={tomHi.h}  borderRadius={tomHi.borderRadius}  style={tomHi.style} />
+      <DrumPad piece={p['tom_mid']}   onHit={onHit} width={tomMid.w} height={tomMid.h} borderRadius={tomMid.borderRadius} style={tomMid.style} />
+      <DrumPad piece={p['tom_low']}   onHit={onHit} width={tomLow.w} height={tomLow.h} borderRadius={tomLow.borderRadius} style={tomLow.style} />
 
       {/* ── Snare ───────────────────────────────────────────────── */}
-      <DrumPad piece={p['snare']} onHit={onHit} width={snare.w} height={snare.h} borderRadius={snare.w / 2} style={pos(0.42, 0.50, snare.w, snare.h)} />
+      <DrumPad piece={p['snare']} onHit={onHit} width={snare.w} height={snare.h} borderRadius={snare.borderRadius} style={snare.style} />
 
       {/* ── Floor Tom ───────────────────────────────────────────── */}
-      <DrumPad piece={p['tom_floor']} onHit={onHit} width={tomFlr.w} height={tomFlr.h} borderRadius={tomFlr.w / 2} style={pos(0.74, 0.46, tomFlr.w, tomFlr.h)} />
+      <DrumPad piece={p['tom_floor']} onHit={onHit} width={tomFlr.w} height={tomFlr.h} borderRadius={tomFlr.borderRadius} style={tomFlr.style} />
 
       {/* ── Bass Drums ──────────────────────────────────────────── */}
-      <KickPedal piece={p['kick']}  onHit={onHit} width={kick1.w} height={kick1.h} style={pos(0.30, 0.65, kick1.w, kick1.h)} />
-      <KickPedal piece={p['kick2']} onHit={onHit} width={kick2.w} height={kick2.h} style={pos(0.56, 0.65, kick2.w, kick2.h)} />
+      <KickPedal piece={p['kick']}  onHit={onHit} width={kick1.w} height={kick1.h} style={kick1.style} />
+      <KickPedal piece={p['kick2']} onHit={onHit} width={kick2.w} height={kick2.h} style={kick2.style} />
 
       {/* ── Hi-Hat Pedal ────────────────────────────────────────── */}
-      <Cymbal piece={p['hihat_pedal']} onHit={onHit} width={hhPedal.w} height={hhPedal.h} style={pos(0.34, 0.15, hhPedal.w, hhPedal.h)} />
+      <Cymbal piece={p['hihat_pedal']} onHit={onHit} width={hhPedal.w} height={hhPedal.h} style={hhPedal.style} />
     </View>
   );
 }

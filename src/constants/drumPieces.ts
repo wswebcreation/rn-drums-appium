@@ -1,0 +1,96 @@
+import { DrumPiece } from '../types/drum';
+
+export const DRUM_PIECES: DrumPiece[] = [
+  {
+    id: 'crash_left',
+    label: 'Crash L',
+    accessibilityLabel: 'Left Crash Cymbal',
+    soundFile: require('../../assets/sounds/crash.mp3'),
+    color: '#C8A800',
+    hitColor: '#FFE033',
+  },
+  {
+    id: 'crash_right',
+    label: 'Crash R',
+    accessibilityLabel: 'Right Crash Cymbal',
+    soundFile: require('../../assets/sounds/crash.mp3'),
+    color: '#C8A800',
+    hitColor: '#FFE033',
+  },
+  {
+    id: 'ride',
+    label: 'Ride',
+    accessibilityLabel: 'Ride Cymbal',
+    soundFile: require('../../assets/sounds/ride.mp3'),
+    color: '#B8960A',
+    hitColor: '#EDD020',
+  },
+  {
+    id: 'hihat',
+    label: 'Hi-Hat',
+    accessibilityLabel: 'Hi-Hat Cymbal',
+    soundFile: require('../../assets/sounds/hihat_closed.mp3'),
+    color: '#C8A800',
+    hitColor: '#FFE033',
+  },
+  {
+    id: 'hihat_pedal',
+    label: 'Hi-Hat Pedal',
+    accessibilityLabel: 'Hi-Hat Pedal',
+    soundFile: require('../../assets/sounds/hihat_open.mp3'),
+    color: '#8B7500',
+    hitColor: '#C8AA00',
+  },
+  {
+    id: 'snare',
+    label: 'Snare',
+    accessibilityLabel: 'Snare Drum',
+    soundFile: require('../../assets/sounds/snare.mp3'),
+    color: '#D4D4D4',
+    hitColor: '#FFFFFF',
+  },
+  {
+    id: 'tom_high',
+    label: 'Tom 1',
+    accessibilityLabel: 'High Tom',
+    soundFile: require('../../assets/sounds/tom_high.mp3'),
+    color: '#CC2200',
+    hitColor: '#FF5533',
+  },
+  {
+    id: 'tom_mid',
+    label: 'Tom 2',
+    accessibilityLabel: 'Mid Tom',
+    soundFile: require('../../assets/sounds/tom_mid.mp3'),
+    color: '#CC2200',
+    hitColor: '#FF5533',
+  },
+  {
+    id: 'tom_floor',
+    label: 'Floor Tom',
+    accessibilityLabel: 'Floor Tom',
+    soundFile: require('../../assets/sounds/tom_floor.mp3'),
+    color: '#CC2200',
+    hitColor: '#FF5533',
+  },
+  {
+    id: 'kick',
+    label: 'Kick 1',
+    accessibilityLabel: 'Bass Drum 1',
+    soundFile: require('../../assets/sounds/kick.mp3'),
+    color: '#CC2200',
+    hitColor: '#FF5533',
+  },
+  {
+    id: 'kick2',
+    label: 'Kick 2',
+    accessibilityLabel: 'Bass Drum 2',
+    soundFile: require('../../assets/sounds/kick2.mp3'),
+    color: '#CC2200',
+    hitColor: '#FF5533',
+  },
+];
+
+export const DRUM_PIECE_MAP = Object.fromEntries(
+  DRUM_PIECES.map((p) => [p.id, p]),
+) as Record<string, DrumPiece>;

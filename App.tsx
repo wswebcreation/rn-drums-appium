@@ -1,20 +1,34 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { DrumKit, LoadingScreen } from './src/components';
+import { useDrumKit } from './src/hooks/useDrumKit';
+import { DrumPieceId } from './src/types/drum';
 
 export default function App() {
+  const { hit, progress, isReady } = useDrumKit();
+
+  const handleHit = useCallback(
+    (id: DrumPieceId) => {
+      hit(id);
+    },
+    [hit],
+  );
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView style={styles.root} testID="app_root">
+      <StatusBar hidden />
+      {isReady ? (
+        <DrumKit onHit={handleHit} />
+      ) : (
+        <LoadingScreen progress={progress} />
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#111',
   },
 });

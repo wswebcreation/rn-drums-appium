@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
   kickDrum: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.5)',
+    // borderWidth: 1.5,
+    // borderColor: 'rgba(255,255,255,0.5)',
   },
   label: {
     color: '#fff',

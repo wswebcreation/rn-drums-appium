@@ -66,6 +66,14 @@ export const DRUM_PIECES: DrumPiece[] = [
     hitColor: '#FF5533',
   },
   {
+    id: 'tom_low',
+    label: 'Tom 3',
+    accessibilityLabel: 'Low Tom',
+    soundFile: require('../../assets/sounds/tom_low.mp3'),
+    color: '#CC2200',
+    hitColor: '#FF5533',
+  },
+  {
     id: 'tom_floor',
     label: 'Floor Tom',
     accessibilityLabel: 'Floor Tom',

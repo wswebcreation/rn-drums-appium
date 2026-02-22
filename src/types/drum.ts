@@ -7,6 +7,7 @@ export type DrumPieceId =
   | 'snare'
   | 'tom_high'
   | 'tom_mid'
+  | 'tom_low'
   | 'tom_floor'
   | 'kick'
   | 'kick2';

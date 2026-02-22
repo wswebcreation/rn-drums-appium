@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
   ViewStyle,
 } from 'react-native';
 import { DrumPiece } from '../types/drum';
@@ -18,15 +17,12 @@ interface KickPedalProps {
 }
 
 export function KickPedal({ piece, onHit, width, height, style }: KickPedalProps) {
-  // Native driver — transform only, on the outer view
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  // JS driver — backgroundColor only, on the inner view
   const colorAnim = useRef(new Animated.Value(0)).current;
 
   const handlePress = useCallback(() => {
     onHit(piece.id);
 
-    // Scale: native driver, independent sequence
     Animated.sequence([
       Animated.timing(scaleAnim, {
         toValue: 0.88,
@@ -40,7 +36,6 @@ export function KickPedal({ piece, onHit, width, height, style }: KickPedalProps
       }),
     ]).start();
 
-    // Color: JS driver, independent sequence
     Animated.sequence([
       Animated.timing(colorAnim, {
         toValue: 1,
@@ -57,7 +52,7 @@ export function KickPedal({ piece, onHit, width, height, style }: KickPedalProps
 
   const backgroundColor = colorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [piece.color, piece.hitColor],
+    outputRange: ['rgba(255,255,255,0.04)', 'rgba(255,255,255,0.3)'],
   });
 
   return (
@@ -69,7 +64,6 @@ export function KickPedal({ piece, onHit, width, height, style }: KickPedalProps
       testID={piece.id}
       style={style}
     >
-      {/* Outer view: native-driver transform ONLY */}
       <Animated.View
         style={[
           styles.scaleWrapper,
@@ -77,39 +71,15 @@ export function KickPedal({ piece, onHit, width, height, style }: KickPedalProps
           { transform: [{ scale: scaleAnim }] },
         ]}
       >
-        {/* Inner view: JS-driver backgroundColor ONLY */}
         <Animated.View
           style={[
             styles.kickDrum,
             { width, height, borderRadius: width / 2, backgroundColor },
           ]}
         >
-          {/* Concentric rings */}
-          <View
-            style={[
-              styles.ring,
-              {
-                width: width * 0.82,
-                height: height * 0.82,
-                borderRadius: (width * 0.82) / 2,
-              },
-            ]}
-          />
-          <View
-            style={[
-              styles.ring,
-              {
-                width: width * 0.58,
-                height: height * 0.58,
-                borderRadius: (width * 0.58) / 2,
-              },
-            ]}
-          />
-          <View style={styles.logoArea}>
-            <Text style={[styles.label, { fontSize: width > 90 ? 13 : 10 }]}>
-              {piece.label}
-            </Text>
-          </View>
+          <Text style={[styles.label, { fontSize: width > 90 ? 13 : 10 }]}>
+            {piece.label}
+          </Text>
         </Animated.View>
       </Animated.View>
     </TouchableOpacity>
@@ -124,22 +94,8 @@ const styles = StyleSheet.create({
   kickDrum: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 5,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.8,
-    shadowRadius: 12,
-    elevation: 14,
-  },
-  ring: {
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.22)',
-  },
-  logoArea: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.5)',
   },
   label: {
     color: '#fff',

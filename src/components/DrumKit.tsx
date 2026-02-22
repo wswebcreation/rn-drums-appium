@@ -1,84 +1,73 @@
 import React from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { DRUM_PIECE_MAP } from '../constants/drumPieces';
 import { DrumPieceId } from '../types/drum';
 import { Cymbal } from './Cymbal';
 import { DrumPad } from './DrumPad';
 import { KickPedal } from './KickPedal';
 
+const BG_IMAGE = require('../../assets/drumkit-bg.png');
+const IMAGE_ASPECT = 1024 / 682;
+
 interface DrumKitProps {
   onHit: (id: DrumPieceId) => void;
 }
 
-/**
- * Realistic overhead (top-down) drum kit in landscape orientation.
- *
- * Coordinate system: origin = top-left of the kit canvas.
- * All positions are expressed as fractions of canvas W×H so the
- * layout scales correctly on any landscape screen.
- *
- * Drummer's perspective (seated at bottom, facing up):
- *
- *   crash_left   hihat    tom_high  tom_mid   crash_right
- *                snare                        ride
- *   hihat_pedal           tom_floor
- *        kick (L)              kick (R)
- *
- * Cymbals sit higher (smaller, elliptical) because they are on stands
- * above the drum heads when viewed from above.
- */
 export function DrumKit({ onHit }: DrumKitProps) {
   const { width: sw, height: sh } = useWindowDimensions();
 
-  // Canvas fills the available area
   const CW = sw;
   const CH = sh;
 
-  // ── Size helpers ─────────────────────────────────────────────
-  // Cymbals are ellipses: wide but very thin (viewed from above)
-  const cym = (wFrac: number) => ({
-    w: CW * wFrac,
-    h: CW * wFrac * 0.18, // thin ellipse = top-down cymbal
-  });
+  // "Contain" the image: compute the displayed rect so positions stay
+  // aligned with the photo regardless of screen aspect ratio.
+  const screenAspect = CW / CH;
+  let imgW: number, imgH: number, imgX: number, imgY: number;
+  if (screenAspect > IMAGE_ASPECT) {
+    imgH = CH;
+    imgW = CH * IMAGE_ASPECT;
+    imgX = (CW - imgW) / 2;
+    imgY = 0;
+  } else {
+    imgW = CW;
+    imgH = CW / IMAGE_ASPECT;
+    imgX = 0;
+    imgY = (CH - imgH) / 2;
+  }
 
-  // Round drum pads (toms, snare)
-  const pad = (frac: number) => ({
-    w: CW * frac,
-    h: CW * frac,
-  });
-
-  // Bass drums are large circles
-  const kick = (frac: number) => ({
-    w: CW * frac,
-    h: CW * frac,
-  });
-
-  // Sizes
-  const crashL  = cym(0.115);
-  const crashR  = cym(0.115);
-  const hihat   = cym(0.10);
-  const hhPedal = cym(0.09);
-  const ride    = cym(0.135);
-  const snare   = pad(0.12);
-  const tomHi   = pad(0.105);
-  const tomMid  = pad(0.105);
-  const tomFlr  = pad(0.135);
-  const kick1   = kick(0.175);
-  const kick2   = kick(0.175);
+  // ── Size helpers — all relative to image width ──────────────────
+  const cym = (frac: number) => {
+    const size = imgW * frac;
+    return { w: size, h: size };
+  };
+  const pad = (frac: number) => ({ w: imgW * frac, h: imgW * frac });
+  const kickSz = (frac: number) => ({ w: imgW * frac, h: imgW * frac });
+  const crashL  = cym(0.17);
+  const crashR  = cym(0.19);
+  const hihat   = cym(0.12);
+  const hhPedal = cym(0.1);
+  const ride    = cym(0.18);
+  const snare   = pad(0.10);
+  const tomHi   = pad(0.095);
+  const tomMid  = pad(0.095);
+  const tomLow  = pad(0.095);
+  const tomFlr  = pad(0.14);
+  const kick1   = kickSz(0.17);
+  const kick2   = kickSz(0.17);
 
   /**
-   * Place a piece so its centre sits at (cx, cy) fractions of CW/CH.
-   * Returns absolute-position style.
+   * Centre a piece at (cx, cy) — fractions of the displayed image —
+   * and convert to absolute positioning within the full screen canvas.
    */
   function pos(cx: number, cy: number, w: number, h: number) {
     return {
       position: 'absolute' as const,
-      left: CW * cx - w / 2,
-      top: CH * cy - h / 2,
+      left: imgX + imgW * cx - w / 2,
+      top: imgY + imgH * cy - h / 2,
     };
   }
 
-  const pieces = DRUM_PIECE_MAP;
+  const p = DRUM_PIECE_MAP;
 
   return (
     <View
@@ -86,111 +75,35 @@ export function DrumKit({ onHit }: DrumKitProps) {
       testID="drum_kit"
       accessibilityLabel="Drum Kit"
     >
-      {/* ── Cymbals (top row) ───────────────────────────────── */}
-      {/* Crash Left — far left, high up */}
-      <Cymbal
-        piece={pieces['crash_left']}
-        onHit={onHit}
-        width={crashL.w}
-        height={crashL.h}
-        style={pos(0.09, 0.18, crashL.w, crashL.h)}
+      <Image
+        source={BG_IMAGE}
+        style={[styles.bg, { left: imgX, top: imgY, width: imgW, height: imgH }]}
+        resizeMode="cover"
       />
 
-      {/* Hi-Hat — left-centre, just above snare */}
-      <Cymbal
-        piece={pieces['hihat']}
-        onHit={onHit}
-        width={hihat.w}
-        height={hihat.h}
-        style={pos(0.27, 0.22, hihat.w, hihat.h)}
-      />
+      {/* ── Cymbals ─────────────────────────────────────────────── */}
+      <Cymbal piece={p['crash_left']}  onHit={onHit} width={crashL.w}  height={crashL.h}  style={pos(0.15,  0.15, crashL.w,  crashL.h)} />
+      <Cymbal piece={p['hihat']}       onHit={onHit} width={hihat.w}   height={hihat.h}   style={pos(0.075, 0.35,  hihat.w,   hihat.h)} />
+      <Cymbal piece={p['ride']}        onHit={onHit} width={ride.w}    height={ride.h}    style={pos(0.67, 0.15, ride.w,    ride.h)} />
+      <Cymbal piece={p['crash_right']} onHit={onHit} width={crashR.w}  height={crashR.h}  style={pos(0.89,  0.25,  crashR.w,  crashR.h)} />
 
-      {/* Tom High — centre-left, top area */}
-      <DrumPad
-        piece={pieces['tom_high']}
-        onHit={onHit}
-        width={tomHi.w}
-        height={tomHi.h}
-        borderRadius={tomHi.w / 2}
-        style={pos(0.44, 0.18, tomHi.w, tomHi.h)}
-      />
+      {/* ── Toms ────────────────────────────────────────────────── */}
+      <DrumPad piece={p['tom_high']}  onHit={onHit} width={tomHi.w}  height={tomHi.h}  borderRadius={tomHi.w / 2}  style={pos(0.26,  0.34,  tomHi.w,  tomHi.h)} />
+      <DrumPad piece={p['tom_mid']}   onHit={onHit} width={tomMid.w} height={tomMid.h} borderRadius={tomMid.w / 2} style={pos(0.4, 0.275, tomMid.w, tomMid.h)} />
+      <DrumPad piece={p['tom_low']}   onHit={onHit} width={tomLow.w} height={tomLow.h} borderRadius={tomLow.w / 2} style={pos(0.56, 0.29, tomLow.w, tomLow.h)} />
 
-      {/* Tom Mid — centre, top area */}
-      <DrumPad
-        piece={pieces['tom_mid']}
-        onHit={onHit}
-        width={tomMid.w}
-        height={tomMid.h}
-        borderRadius={tomMid.w / 2}
-        style={pos(0.56, 0.18, tomMid.w, tomMid.h)}
-      />
+      {/* ── Snare ───────────────────────────────────────────────── */}
+      <DrumPad piece={p['snare']} onHit={onHit} width={snare.w} height={snare.h} borderRadius={snare.w / 2} style={pos(0.42, 0.50, snare.w, snare.h)} />
 
-      {/* Crash Right — far right, high up */}
-      <Cymbal
-        piece={pieces['crash_right']}
-        onHit={onHit}
-        width={crashR.w}
-        height={crashR.h}
-        style={pos(0.91, 0.18, crashR.w, crashR.h)}
-      />
+      {/* ── Floor Tom ───────────────────────────────────────────── */}
+      <DrumPad piece={p['tom_floor']} onHit={onHit} width={tomFlr.w} height={tomFlr.h} borderRadius={tomFlr.w / 2} style={pos(0.74, 0.46, tomFlr.w, tomFlr.h)} />
 
-      {/* ── Mid row ─────────────────────────────────────────── */}
-      {/* Snare — left side, mid height */}
-      <DrumPad
-        piece={pieces['snare']}
-        onHit={onHit}
-        width={snare.w}
-        height={snare.h}
-        borderRadius={snare.w / 2}
-        style={pos(0.27, 0.44, snare.w, snare.h)}
-      />
+      {/* ── Bass Drums ──────────────────────────────────────────── */}
+      <KickPedal piece={p['kick']}  onHit={onHit} width={kick1.w} height={kick1.h} style={pos(0.30, 0.65, kick1.w, kick1.h)} />
+      <KickPedal piece={p['kick2']} onHit={onHit} width={kick2.w} height={kick2.h} style={pos(0.56, 0.65, kick2.w, kick2.h)} />
 
-      {/* Ride — right side, mid height */}
-      <Cymbal
-        piece={pieces['ride']}
-        onHit={onHit}
-        width={ride.w}
-        height={ride.h}
-        style={pos(0.82, 0.38, ride.w, ride.h)}
-      />
-
-      {/* Floor Tom — right-centre, lower mid */}
-      <DrumPad
-        piece={pieces['tom_floor']}
-        onHit={onHit}
-        width={tomFlr.w}
-        height={tomFlr.h}
-        borderRadius={tomFlr.w / 2}
-        style={pos(0.70, 0.55, tomFlr.w, tomFlr.h)}
-      />
-
-      {/* ── Bass drums (bottom row) ──────────────────────────── */}
-      {/* Kick 1 — left */}
-      <KickPedal
-        piece={pieces['kick']}
-        onHit={onHit}
-        width={kick1.w}
-        height={kick1.h}
-        style={pos(0.35, 0.72, kick1.w, kick1.h)}
-      />
-
-      {/* Kick 2 — right (double bass) */}
-      <KickPedal
-        piece={pieces['kick2']}
-        onHit={onHit}
-        width={kick2.w}
-        height={kick2.h}
-        style={pos(0.56, 0.72, kick2.w, kick2.h)}
-      />
-
-      {/* ── Hi-Hat Pedal — bottom-left, beside kick ─────────── */}
-      <Cymbal
-        piece={pieces['hihat_pedal']}
-        onHit={onHit}
-        width={hhPedal.w}
-        height={hhPedal.h}
-        style={pos(0.14, 0.82, hhPedal.w, hhPedal.h)}
-      />
+      {/* ── Hi-Hat Pedal ────────────────────────────────────────── */}
+      <Cymbal piece={p['hihat_pedal']} onHit={onHit} width={hhPedal.w} height={hhPedal.h} style={pos(0.34, 0.15, hhPedal.w, hhPedal.h)} />
     </View>
   );
 }
@@ -199,5 +112,8 @@ const styles = StyleSheet.create({
   canvas: {
     backgroundColor: '#111',
     overflow: 'hidden',
+  },
+  bg: {
+    position: 'absolute',
   },
 });

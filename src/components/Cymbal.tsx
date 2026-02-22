@@ -17,15 +17,12 @@ interface CymbalProps {
 }
 
 export function Cymbal({ piece, onHit, width, height, style }: CymbalProps) {
-  // Native driver — transform only, on the outer view
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  // JS driver — backgroundColor only, on the inner view
   const colorAnim = useRef(new Animated.Value(0)).current;
 
   const handlePress = useCallback(() => {
     onHit(piece.id);
 
-    // Scale: native driver, independent sequence
     Animated.sequence([
       Animated.timing(scaleAnim, {
         toValue: 0.93,
@@ -39,7 +36,6 @@ export function Cymbal({ piece, onHit, width, height, style }: CymbalProps) {
       }),
     ]).start();
 
-    // Color: JS driver, independent sequence
     Animated.sequence([
       Animated.timing(colorAnim, {
         toValue: 1,
@@ -56,7 +52,7 @@ export function Cymbal({ piece, onHit, width, height, style }: CymbalProps) {
 
   const backgroundColor = colorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [piece.color, piece.hitColor],
+    outputRange: ['rgba(255,255,255,0.04)', 'rgba(255,215,0,0.35)'],
   });
 
   return (
@@ -68,7 +64,6 @@ export function Cymbal({ piece, onHit, width, height, style }: CymbalProps) {
       testID={piece.id}
       style={style}
     >
-      {/* Outer view: native-driver transform ONLY */}
       <Animated.View
         style={[
           styles.scaleWrapper,
@@ -76,25 +71,17 @@ export function Cymbal({ piece, onHit, width, height, style }: CymbalProps) {
           { transform: [{ scale: scaleAnim }] },
         ]}
       >
-        {/* Inner view: JS-driver backgroundColor ONLY */}
         <Animated.View
           style={[
             styles.cymbal,
-            { width, height, borderRadius: width / 2, backgroundColor },
+            {
+              width,
+              height,
+              borderRadius: Math.max(width, height) / 2,
+              backgroundColor,
+            },
           ]}
         >
-          {/* Centre dome — plain View, no animated style */}
-          <Animated.View
-            style={[
-              styles.cymbalDome,
-              {
-                width: width * 0.28,
-                height: width * 0.28,
-                borderRadius: (width * 0.28) / 2,
-                backgroundColor,
-              },
-            ]}
-          />
           <Text style={[styles.label, { fontSize: width < 70 ? 8 : 10 }]}>
             {piece.label}
           </Text>
@@ -112,25 +99,15 @@ const styles = StyleSheet.create({
   cymbal: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(0,0,0,0.4)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.55,
-    shadowRadius: 5,
-    elevation: 7,
-  },
-  cymbalDome: {
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: 'rgba(0,0,0,0.35)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.5)',
   },
   label: {
-    color: '#1a1a1a',
+    color: '#fff',
     fontWeight: '700',
     textAlign: 'center',
-    textShadowColor: 'rgba(255,255,255,0.4)',
+    textShadowColor: 'rgba(0,0,0,0.9)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
   },
 });
